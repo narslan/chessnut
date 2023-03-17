@@ -8,17 +8,24 @@
 init(Req, Opts) ->
 	{cowboy_websocket, Req, Opts}.
 
+start_binbo() ->
+	binbo:start(),
+	{ok, Pid} = binbo:new_server(),
+	binbo:new_game(Pid),
+	Pid.
+
 websocket_init(State) ->
-	erlang:start_timer(1000, self(), <<"Hello!">>),
+	start_binbo(),	
+	erlang:start_timer(1000, self(), <<"Hello">>),
 	{[], State}.
 
 websocket_handle({text, Msg}, State) ->
+	io:format("state ~s ~n", State),
 	{[{text, << "That's what she said! ", Msg/binary >>}], State};
 websocket_handle(_Data, State) ->
 	{[], State}.
 
 websocket_info({timeout, _Ref, Msg}, State) ->
-	erlang:start_timer(1000, self(), <<"How' you doin'?">>),
-	{[{text, Msg}], State};
+    {[{text, Msg}], State};
 websocket_info(_Info, State) ->
-	{[], State}.
+    {[], State}.
