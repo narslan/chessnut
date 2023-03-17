@@ -15,7 +15,8 @@ start(_Type, _Args) ->
 			{"/", cowboy_static, {priv_file, chessnut, "satranc/index.html"}},
 			{"/websocket", ws_h, []},
 			{"/assets/[...]", cowboy_static, {priv_dir, chessnut, "satranc/assets"}},
-			{"/dist/[...]", cowboy_static, {priv_dir, chessnut, "satranc/dist"}}
+		       {"/dist/[...]", cowboy_static, {priv_dir, chessnut, "satranc/dist"}},
+		       {"/rest", rest_h, []}
 		]}
 	]),
 	{ok, _} = cowboy:start_clear(http, [{port, 8080}], #{
