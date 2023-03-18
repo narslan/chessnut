@@ -15,12 +15,13 @@ start(_Type, _Args) ->
 			{"/", cowboy_static, {priv_file, chessnut, "satranc/index.html"}},
 			{"/websocket", ws_h, []},
 			{"/assets/[...]", cowboy_static, {priv_dir, chessnut, "satranc/assets"}},
-		       {"/dist/[...]", cowboy_static, {priv_dir, chessnut, "satranc/dist"}},
-		       {"/rest", rest_h, []}
+		    {"/dist/[...]", cowboy_static, {priv_dir, chessnut, "satranc/dist"}},
+		    {"/rest", rest_h, []}
 		]}
 	]),
 	{ok, _} = cowboy:start_clear(http, [{port, 8080}], #{
-		env => #{dispatch => Dispatch}
+		env => #{dispatch => Dispatch},
+		logger => ?MODULE
 	}),
 	chessnut_sup:start_link().
 
