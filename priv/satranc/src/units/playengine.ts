@@ -4,7 +4,7 @@ import { toDests, playOtherSide } from '../util'
 import { Unit } from './unit';
 
 export const whitefirst: Unit = {
-  name: 'Play against engine with black pieces',
+  name: 'Play against engine with white pieces',
   run(el) {
     const chess = new Chess();
     const cg = Chessground(el, {

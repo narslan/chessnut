@@ -11,7 +11,7 @@ chessnut
 3. See the warning.
 ### Warning
 The web interface doesn't close Websocket connections if you navigate between pages, many dangling websocket connection will be created accordingly.
-That is stupid. The reason for that is, navigation and connection instantination are far seperate from each other. I'm looking for a work around.    
+That is stupid. The reason for that is, navigation and connection instantination are far seperate from each other. I'm looking for a workaround.    
 
 ### Build ui
 ```sh
