@@ -21,7 +21,7 @@ export const whitefirst: Unit = {
 
 
     cg.set({
-      movable: { events: { after: playOtherSide(cg, chess) } }
+      movable: { events: { after: playOtherSide(cg, chess, 'white') } }
     });
     return cg;
   }
@@ -45,7 +45,7 @@ export const blackfirst: Unit = {
     });
 
     cg.set({
-      movable: { events: { after: playOtherSide(cg, chess) } }
+      movable: { events: { after: playOtherSide(cg, chess, 'black') } }
     });
     return cg;
   }

@@ -8,32 +8,36 @@
 -record(state, {
          pid = undefined :: undefined | pid(),
          state = undefined :: undefined | connected | running,
-         room = undefined :: undefined | string()
+         color = undefined :: undefined | binary()
 }).
 
-init(Req, State) ->
+init(Req, _State) ->
     Opts = #{compress => true},
-	io:format("initialazied ~p \n", [Req]),
-    {cowboy_websocket, Req, State, Opts}.
+	#{qs := QueryString} = Req, %% capture the color of the player from request.
+	State0 = #state{color = QueryString},
+    {cowboy_websocket, Req, State0, Opts}.
 
 start_binbo() ->
-	binbo:start(),
 	{ok, Pid} = binbo:new_server(),
 	EnginePath = "/home/nevroz/go/bin/stockfish",
 	binbo:new_uci_game(Pid, #{engine_path => EnginePath}),
 	binbo:side_to_move(Pid),	
 	Pid.
 
-websocket_init(_State) ->
+websocket_init(State) ->
+	#state{color = Color} = State,   
 	Pid = start_binbo(),
-	State0 = #state{pid = Pid},
-	Pid0 = pid_to_list(Pid),
-	Pid1 = list_to_binary(Pid0),
-	erlang:start_timer(1000, self(), <<Pid1/binary>>),
+	State0 = State#state{pid = Pid},
+	case Color of 
+		<<"color=black">> -> 
+			{_, _, EngineMove} = binbo:uci_play(Pid, #{}),
+			erlang:start_timer(1000, self(), EngineMove);
+		<<"color=white">> -> erlang:start_timer(1000, self(), "hello white")
+	end,
 	{[], State0}.
 
+%% trim move string "a2a4"  to be able provide as an input for binbo.
 trim_quotes(Bin) -> list_to_binary(skip_quote(binary_to_list(Bin))).
-
 skip_quote([$\"|T]) -> skip_quote(T);
 skip_quote([T|$\"]) -> skip_quote(T);
 skip_quote(X) -> X.

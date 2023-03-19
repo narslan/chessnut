@@ -15,11 +15,10 @@ export function toColor(chess: ChessInstance): Color {
   return (chess.turn() === 'w') ? 'white' : 'black';
 }
 
-export function playOtherSide(cg: Api, chess: ChessInstance) {
+export function playOtherSide(cg: Api, chess: ChessInstance, color: Color) {
 
-  
   //websocket button
-  const webSocket = new WebSocket("ws://localhost:8080/websocket");
+  const webSocket = new WebSocket(`ws://localhost:8080/websocket?color=${color}`);
 
   webSocket.onmessage = (evt) => {
     const msg: string = evt['data'];
