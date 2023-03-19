@@ -1,5 +1,5 @@
 -module(ws_h).
-
+-import(lists, [filter/2, map/2, reverse/1]).
 -export([init/2]).
 -export([websocket_init/1]).
 -export([websocket_handle/2]).
@@ -18,21 +18,29 @@ init(Req, State) ->
 start_binbo() ->
 	binbo:start(),
 	{ok, Pid} = binbo:new_server(),
-	binbo:new_game(Pid),	
+	EnginePath = "/home/nevroz/go/bin/stockfish",
+	binbo:new_uci_game(Pid, #{engine_path => EnginePath}),
+	binbo:side_to_move(Pid),	
 	Pid.
 
 websocket_init(_State) ->
 	Pid = start_binbo(),
-	State0 = #state{pid = Pid, state = connected, room = "new room"},
-	erlang:start_timer(1000, self(), <<"Hello">>),
-	{[], State0}.
-
-websocket_handle({text, Msg}, State) ->
-	#state{pid = Pid,  room = Room}=State,
+	State0 = #state{pid = Pid},
 	Pid0 = pid_to_list(Pid),
 	Pid1 = list_to_binary(Pid0),
-	Room0 = list_to_binary(Room),
-	{[{text, << Pid1/binary, Room0/binary, Msg/binary >>}], State};
+	erlang:start_timer(1000, self(), <<Pid1/binary>>),
+	{[], State0}.
+
+trim_quotes(Bin) -> list_to_binary(skip_quote(binary_to_list(Bin))).
+
+skip_quote([$\"|T]) -> skip_quote(T);
+skip_quote([T|$\"]) -> skip_quote(T);
+skip_quote(X) -> X.
+
+websocket_handle({text, Msg}, State) ->
+	#state{pid = Pid }=State,
+	{_, _, EngineMove} = binbo:uci_play(Pid, #{}, trim_quotes(Msg)),
+	{[{text,   EngineMove}], State};
 
 websocket_handle(_Data, State) ->
 	{[], State}.

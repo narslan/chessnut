@@ -1,6 +1,6 @@
 import { Chessground } from 'chessground';
-import { Chess } from 'chess.js';
-import { toDests, playOtherSide } from './util'
+import { Chess, Square } from 'chess.js';
+import { toDests, playOtherSide , toColor} from './util'
 
 
 const chess = new Chess();
@@ -28,6 +28,26 @@ wsButton?.addEventListener('click', function handleClick(event) {
   cg.set({
     movable: { events: { after: playOtherSide(cg, chess, webSocket!) } }
   });
+
+  webSocket.onmessage = (evt) => {
+    const msg: string = evt['data'];
+    if ((msg.length) == 4 ) {
+      const from = msg.slice(0, 2) as Square;
+      const to = msg.slice(2, 4) as Square;
+      chess.move({from, to});
+      cg.move(from, to);
+      cg.set({
+        turnColor: toColor(chess),
+        movable: {
+          color: toColor(chess),
+          dests: toDests(chess)
+        }
+      });
+     
+    } 
+    
+    
+};
 
   return webSocket;
 

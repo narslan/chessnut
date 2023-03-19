@@ -1,14 +1,17 @@
 chessnut
 =====
 
-chessnut has a websocket server.
-TODO:
-1. Websocket connection to backend.
-2. Interface for BINBO
-3. Improve GUI.
+`chessnut` is web interface to binbo.
 
+### Build ui
+```sh
+cd priv/satranc
+npm install 
+npm run build
+```
+### Build backend
 
-
------
-    
-    $ rebar3 compile
+```sh
+rebar3 get-deps
+rebar3 shell    
+```    
