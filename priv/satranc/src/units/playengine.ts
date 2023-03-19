@@ -4,7 +4,7 @@ import { toDests, playOtherSide } from '../util'
 import { Unit } from './unit';
 
 export const whitefirst: Unit = {
-  name: 'Play white from initial position',
+  name: 'Play against engine with black pieces',
   run(el) {
     const chess = new Chess();
     const cg = Chessground(el, {
@@ -19,7 +19,6 @@ export const whitefirst: Unit = {
       }
     });
 
-
     cg.set({
       movable: { events: { after: playOtherSide(cg, chess, 'white') } }
     });
@@ -29,7 +28,7 @@ export const whitefirst: Unit = {
 
 
 export const blackfirst: Unit = {
-  name: 'Play black from initial position',
+  name: 'Play against engine with black pieces',
   run(el) {
     const chess = new Chess();
     const cg = Chessground(el, {
