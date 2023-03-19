@@ -28,3 +28,25 @@ export const whitefirst: Unit = {
 };
 
 
+export const blackfirst: Unit = {
+  name: 'Play black from initial position',
+  run(el) {
+    const chess = new Chess();
+    const cg = Chessground(el, {
+      orientation: 'black',
+      movable: {
+        color: 'white',
+        free: false,
+        dests: toDests(chess),
+      },
+      draggable: {
+        showGhost: true
+      }
+    });
+
+    cg.set({
+      movable: { events: { after: playOtherSide(cg, chess) } }
+    });
+    return cg;
+  }
+};

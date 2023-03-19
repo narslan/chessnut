@@ -13,6 +13,7 @@
 
 init(Req, State) ->
     Opts = #{compress => true},
+	io:format("initialazied ~p \n", [Req]),
     {cowboy_websocket, Req, State, Opts}.
 
 start_binbo() ->

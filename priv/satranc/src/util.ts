@@ -47,10 +47,8 @@ export function playOtherSide(cg: Api, chess: ChessInstance) {
         dests: toDests(chess)
       }
     });
-    //console.log(chess.fen());
-    //console.log(chess.moves());
-    //webSocket.send(JSON.stringify(chess.fen()));
-    
     webSocket.send(JSON.stringify(`${orig}${dest}`));
   };
+
+
 }

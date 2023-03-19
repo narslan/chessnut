@@ -10,6 +10,6 @@ export interface Unit {
 
 export const list: Unit[] = [
   playengine.whitefirst,
- 
+  playengine.blackfirst,
 
 ];
