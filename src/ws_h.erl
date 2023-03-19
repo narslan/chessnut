@@ -19,7 +19,7 @@ init(Req, _State) ->
 
 start_binbo() ->
 	{ok, Pid} = binbo:new_server(),
-	EnginePath = "/home/nevroz/go/bin/stockfish",
+	EnginePath = os:getenv("CHESS_ENGINE"),
 	binbo:new_uci_game(Pid, #{engine_path => EnginePath}),
 	binbo:side_to_move(Pid),	
 	Pid.
@@ -32,7 +32,7 @@ websocket_init(State) ->
 		<<"color=black">> -> 
 			{_, _, EngineMove} = binbo:uci_play(Pid, #{}),
 			erlang:start_timer(1000, self(), EngineMove);
-		<<"color=white">> -> erlang:start_timer(1000, self(), "hello white")
+		<<"color=white">> -> erlang:start_timer(1000, self(), "greetings from chessnut")
 	end,
 	{[], State0}.
 
