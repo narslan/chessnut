@@ -1,6 +1,6 @@
 import { Api } from 'chessground/api';
 import { Color, Key } from 'chessground/types';
-import {ChessInstance, SQUARES} from 'chess.js';
+import {ChessInstance, Square, SQUARES} from 'chess.js';
 
 export function toDests(chess: ChessInstance): Map<Key, Key[]> {
   const dests = new Map();
@@ -15,11 +15,29 @@ export function toColor(chess: ChessInstance): Color {
   return (chess.turn() === 'w') ? 'white' : 'black';
 }
 
-export function playOtherSide(cg: Api, chess: ChessInstance, webSocket: WebSocket) {
+export function playOtherSide(cg: Api, chess: ChessInstance) {
 
   
   //websocket button
+  const webSocket = new WebSocket("ws://localhost:8080/websocket");
 
+  webSocket.onmessage = (evt) => {
+    const msg: string = evt['data'];
+    if ((msg.length) == 4) {
+      const from = msg.slice(0, 2) as Square;
+      const to = msg.slice(2, 4) as Square;
+      chess.move({ from, to });
+      cg.move(from, to);
+      cg.set({
+        turnColor: toColor(chess),
+        movable: {
+          color: toColor(chess),
+          dests: toDests(chess)
+        }
+      });
+    }
+  };
+  
   return (orig, dest) => {
     chess.move({from: orig, to: dest});
     cg.set({
@@ -34,25 +52,5 @@ export function playOtherSide(cg: Api, chess: ChessInstance, webSocket: WebSocke
     //webSocket.send(JSON.stringify(chess.fen()));
     
     webSocket.send(JSON.stringify(`${orig}${dest}`));
-  };
-}
-
-export function aiPlay(cg: Api, chess: ChessInstance, delay: number, firstMove: boolean) {
-  return (orig, dest) => {
-    chess.move({from: orig, to: dest});
-    setTimeout(() => {
-      const moves = chess.moves({verbose:true});
-      const move = firstMove ? moves[0] : moves[Math.floor(Math.random() * moves.length)];
-      chess.move(move.san);
-      cg.move(move.from, move.to);
-      cg.set({
-        turnColor: toColor(chess),
-        movable: {
-          color: toColor(chess),
-          dests: toDests(chess)
-        }
-      });
-      cg.playPremove();
-    }, delay);
   };
 }
