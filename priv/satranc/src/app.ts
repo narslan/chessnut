@@ -6,6 +6,7 @@ import { toDests, playOtherSide , toColor} from './util'
 const chess = new Chess();
 const el: HTMLElement = document.getElementById('chessground-examples')!;
 const cg = Chessground(el, {
+  orientation: 'white',
   movable: {
     color: 'white',
     free: false,
