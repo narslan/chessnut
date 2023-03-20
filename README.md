@@ -6,12 +6,15 @@ chessnut
  The Web UI embodies the components out of `lichess-org/chessground-examples` . 
 
 #### TODOS: 
-1. A better web interface. Using plain `typescript` is nice and fast but it is hard to tidying up the code.
-2. There are many things to implement, the possibilities are too many. Thanks to `binbo`. Which feature I want to implement next is matches between engines.
-3. See the warning.
+1. A better web interface. Chessground examples doesn't fullfill my requirements. 
+2. There are many things to implement out of `binbo`, the possibilities are many. Engine tournaments, a demo with pgn. 
+
 ### Warning
-The web interface doesn't close Websocket connections if you navigate between pages, many dangling websocket connection will be created accordingly.
-That is stupid. The reason for that is, navigation and connection instantination are far seperate from each other. I'm looking for a workaround.    
+The web interface doesn't close Websocket connections if you navigate between pages. accordingly many dangling websocket connection will be come into existence .
+The reason for that is, navigation and connection instantination are far seperate from each other. 
+There are two things to do:
+1. I'll disable single page rendering. 
+2. I have to introduce a cleanup in `cowboy`'s `terminate/3`  which eventually invokes `binbo:uci_disconnect`.
 
 ### Build ui
 ```sh
