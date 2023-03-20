@@ -12,10 +12,10 @@
 start(_Type, _Args) ->
 	Dispatch = cowboy_router:compile([
 		{'_', [
-			{"/", cowboy_static, {priv_file, chessnut, "satranc/index.html"}},
+			{"/", cowboy_static, {priv_file, chessnut, "ui/dist/ui/index.html"}},
 			{"/websocket", ws_h, []},
-			{"/assets/[...]", cowboy_static, {priv_dir, chessnut, "satranc/assets"}},
-		    {"/dist/[...]", cowboy_static, {priv_dir, chessnut, "satranc/dist"}},
+			{"/assets/[...]", cowboy_static, {priv_dir, chessnut, "ui/dist/ui/assets"}},
+		    {"/[...]", cowboy_static, {priv_dir, chessnut, "ui/dist/ui"}},
 		    {"/rest", rest_h, []}
 		]}
 	]),
