@@ -15,14 +15,14 @@ Tournaments between engines, a game analyzer.
 I haven't add any lines to handle them. Therefore, those cases, when occur, render the game unplayable.
 
 ## Installation
-### Build ui
+### Build the UI
 ```sh
 cd priv/ui
 npm install 
 npm run build
 ```
 
-### Run backend 
+### Run the backend 
 
 ```sh
 export CHESS_ENGINE="/path/to/chess/engine"  # set the path of chess engine
@@ -30,4 +30,7 @@ rebar3 get-deps
 rebar3 shell    
 ```    
 
-
+### Go to:
+```
+http://localhost:8080/
+```
