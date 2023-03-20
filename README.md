@@ -1,18 +1,19 @@
 chessnut
 =====
-`chessnut` is a very simple Angular web interface to play against chess engines.
- At its core, [binbo](https://github.com/DOBRO/binbo) runs and interacts with chess engines.
- The transmission of moves are handled [cowboy](https://https://github.com/ninenines/cowboy) .
- The Web UI embodies the components out of [lichess-org/chessground-examples](https://github.com/lichess-org/chessground-examples). 
+`chessnut` is a very simple `Angular` web interface for playing against chess engines.
+ At its core, [binbo](https://github.com/DOBRO/binbo) runs and interacts with the chess engines.
+ The transmission of moves between client and backend is handled by [cowboy](https://https://github.com/ninenines/cowboy) over Websockets.
+ The Web UI embodies the components from [lichess-org/chessground-examples](https://github.com/lichess-org/chessground-examples). 
 
-This is a learning tool. Mainly, to practice some `erlang` programming language. 
+This was a learning tool. Mainly, to practice `erlang` programming language. 
+It turns out that the idea has more fun in it than predicted.
 
 #### TODOS: 
 1. A better web interface. 
 2. There are many things to implement out of `binbo`, the possibilities are many. 
 Tournaments between engines, a game analyzer. 
 3. `chessground` doesn't know anything about en passant rule and pawn promotion. 
-I haven't add any lines to handle them. Therefore, those cases, when occur, render the game unplayable.
+I haven't add anything to handle them. Therefore, those cases, when occur, render the game unplayable.
 
 ## Installation
 ### Build the UI
