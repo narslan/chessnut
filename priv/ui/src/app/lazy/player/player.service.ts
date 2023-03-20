@@ -3,6 +3,7 @@ import { Api } from 'chessground/api';
 import { ChessInstance, Square, SQUARES, Chess } from 'chess.js';
 import { Chessground } from 'chessground';
 import { Color, Key, MoveMetadata } from 'chessground/types';
+import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
 
 @Injectable({
@@ -10,9 +11,10 @@ import { Color, Key, MoveMetadata } from 'chessground/types';
 })
 export class PlayerService {
 
-  constructor() { }
-
+  
   init(el: HTMLElement, orientation: Color) {
+
+    const myWebSocket: WebSocketSubject<any> = webSocket(`ws://localhost:8080/websocket?color=${orientation}`);
 
     const chess = new Chess();
     const cg: Api = Chessground(el, {
@@ -28,7 +30,7 @@ export class PlayerService {
     });
 
     cg.set({
-      movable: { events: { after: playOtherSide(cg, chess) } }
+      movable: { events: { after: playOtherSide(cg, chess, myWebSocket) } }
     });
   }
  
@@ -48,24 +50,27 @@ function toColor(chess: ChessInstance): Color {
   return (chess.turn() === 'w') ? 'white' : 'black';
 }
 
-function playOtherSide(cg: Api, chess: ChessInstance) {
+function playOtherSide(cg: Api, chess: ChessInstance, ws: WebSocketSubject<any>) {
 
-  // ws.onmessage = (evt) => {
-  //   const msg: string = evt['data'];
-  //   if ((msg.length) == 4) {
-  //     const from = msg.slice(0, 2) as Square;
-  //     const to = msg.slice(2, 4) as Square;
-  //     chess.move({ from, to });
-  //     cg.move(from, to);
-  //     cg.set({
-  //       turnColor: toColor(chess),
-  //       movable: {
-  //         color: toColor(chess),
-  //         dests: toDests(chess)
-  //       }
-  //     });
-  //   }
-  // };
+  ws.subscribe({
+
+    next: (msg) => {
+      console.log("message from server",msg);
+      
+      const move: string = msg['message'];
+      if ((move.length) == 4) {
+        const from = move.slice(0, 2) as Square;
+        const to = move.slice(2, 4) as Square;
+        chess.move({ from, to });
+        cg.move(from, to);
+        cg.set({
+          turnColor: toColor(chess),
+          movable: {
+            color: toColor(chess),
+            dests: toDests(chess)
+          }
+        });
+      }}});
 
   return (orig: Key, dest: Key, metadata: MoveMetadata) => {
     chess.move({ from: orig as Square, to: dest as Square});
@@ -76,6 +81,6 @@ function playOtherSide(cg: Api, chess: ChessInstance) {
         dests: toDests(chess)
       }
     });
-    //ws.send(JSON.stringify(`${orig}${dest}`));
+    ws.next(`${orig}${dest}`);
   };
 }

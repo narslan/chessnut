@@ -32,8 +32,8 @@ websocket_init(State) ->
 	case Color of 
 		<<"color=black">> -> 
 			{_, _, EngineMove} = binbo:uci_play(Pid, #{}),
-			erlang:start_timer(1000, self(), EngineMove);
-		<<"color=white">> -> erlang:start_timer(1000, self(), "greetings from chessnut")
+			erlang:start_timer(1000, self(),  << "{\"message\":\"", EngineMove/binary, "\"}">> );
+		<<"color=white">> -> erlang:start_timer(1000, self(), "{\"message\": \"greetings from chessnut\"}")
 	end,
 	{[], State0}.
 
@@ -46,7 +46,7 @@ skip_quote(X) -> X.
 websocket_handle({text, Msg}, State) ->
 	#state{pid = Pid }=State,
 	{_, _, EngineMove} = binbo:uci_play(Pid, #{}, trim_quotes(Msg)),
-	{[{text,   EngineMove}], State};
+	{[{text,   << "{\"message\":\"", EngineMove/binary, "\"}">>}], State};
 
 websocket_handle(_Data, State) ->
 	{[], State}.
