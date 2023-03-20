@@ -15,12 +15,9 @@ export function toColor(chess: ChessInstance): Color {
   return (chess.turn() === 'w') ? 'white' : 'black';
 }
 
-export function playOtherSide(cg: Api, chess: ChessInstance, color: Color) {
+export function playOtherSide(cg: Api, chess: ChessInstance, ws: WebSocket) {
  
-  
-  const webSocket = new WebSocket(`ws://localhost:8080/websocket?color=${color}`);
-
-  webSocket.onmessage = (evt) => {
+  ws.onmessage = (evt) => {
     const msg: string = evt['data'];
     if ((msg.length) == 4) {
       const from = msg.slice(0, 2) as Square;
@@ -46,7 +43,7 @@ export function playOtherSide(cg: Api, chess: ChessInstance, color: Color) {
         dests: toDests(chess)
       }
     });
-    webSocket.send(JSON.stringify(`${orig}${dest}`));
+    ws.send(JSON.stringify(`${orig}${dest}`));
   };
 
 

@@ -4,6 +4,7 @@
 -export([websocket_init/1]).
 -export([websocket_handle/2]).
 -export([websocket_info/2]).
+-export([terminate/3]).
 
 -record(state, {
          pid = undefined :: undefined | pid(),
@@ -54,3 +55,7 @@ websocket_info({timeout, _Ref, Msg}, State) ->
     {[{text, Msg}], State};
 websocket_info(_Info, State) ->
     {[], State}.
+
+terminate(Reason, Req, #state{pid=Pid}) ->
+	Pid ! {terminate, Reason, Req},
+	ok.
