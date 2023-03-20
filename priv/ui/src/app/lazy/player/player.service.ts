@@ -11,10 +11,12 @@ import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 })
 export class PlayerService {
 
+  private ws!: WebSocketSubject<any> ;
+
   
   init(el: HTMLElement, orientation: Color) {
 
-    const myWebSocket: WebSocketSubject<any> = webSocket(`ws://localhost:8080/websocket?color=${orientation}`);
+    this.ws = webSocket(`ws://localhost:8080/websocket?color=${orientation}`);
 
     const chess = new Chess();
     const cg: Api = Chessground(el, {
@@ -30,10 +32,54 @@ export class PlayerService {
     });
 
     cg.set({
-      movable: { events: { after: playOtherSide(cg, chess, myWebSocket) } }
+      movable: { events: { after: this.playOtherSide(cg, chess) } }
     });
+    
   }
- 
+  
+  close() {
+    console.log("connection should be closed");
+    
+    this.ws.complete();
+  }
+
+  playOtherSide(cg: Api, chess: ChessInstance) {
+
+    this.ws.subscribe({
+  
+      next: (msg) => {
+        console.log("message from server",msg);
+        
+        const move: string = msg['message'];
+        if ((move.length) == 4) {
+          const from = move.slice(0, 2) as Square;
+          const to = move.slice(2, 4) as Square;
+          chess.move({ from, to });
+          cg.move(from, to);
+          cg.set({
+            turnColor: toColor(chess),
+            movable: {
+              color: toColor(chess),
+              dests: toDests(chess)
+            }
+          });
+        }}});
+  
+    return (orig: Key, dest: Key, metadata: MoveMetadata) => {
+      chess.move({ from: orig as Square, to: dest as Square});
+      cg.set({
+        turnColor: toColor(chess),
+        movable: {
+          color: toColor(chess),
+          dests: toDests(chess)
+        }
+      });
+      this.ws.next(`${orig}${dest}`);
+    };
+  }  
+
+
+
 }
 
 
@@ -50,37 +96,3 @@ function toColor(chess: ChessInstance): Color {
   return (chess.turn() === 'w') ? 'white' : 'black';
 }
 
-function playOtherSide(cg: Api, chess: ChessInstance, ws: WebSocketSubject<any>) {
-
-  ws.subscribe({
-
-    next: (msg) => {
-      console.log("message from server",msg);
-      
-      const move: string = msg['message'];
-      if ((move.length) == 4) {
-        const from = move.slice(0, 2) as Square;
-        const to = move.slice(2, 4) as Square;
-        chess.move({ from, to });
-        cg.move(from, to);
-        cg.set({
-          turnColor: toColor(chess),
-          movable: {
-            color: toColor(chess),
-            dests: toDests(chess)
-          }
-        });
-      }}});
-
-  return (orig: Key, dest: Key, metadata: MoveMetadata) => {
-    chess.move({ from: orig as Square, to: dest as Square});
-    cg.set({
-      turnColor: toColor(chess),
-      movable: {
-        color: toColor(chess),
-        dests: toDests(chess)
-      }
-    });
-    ws.next(`${orig}${dest}`);
-  };
-}

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { PlayerService } from '../player.service';
 
 
@@ -7,7 +7,7 @@ import { PlayerService } from '../player.service';
   templateUrl: './black.component.html',
   styleUrls: ['./black.component.css']
 })
-export class BlackComponent implements AfterViewInit {
+export class BlackComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('myCG') myCG!: ElementRef;
   constructor(private playerService: PlayerService) {}
@@ -19,6 +19,12 @@ export class BlackComponent implements AfterViewInit {
 
     this.playerService.init(el, 'black')
 
+  }
+
+  ngOnDestroy() {
+  
+    
+    this.playerService.close();
   }
 }
 

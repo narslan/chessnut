@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, ElementRef,  ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef,  OnDestroy,  ViewChild } from '@angular/core';
+import { WebSocketSubject } from 'rxjs/webSocket';
 import { PlayerService } from '../player.service';
 
 
@@ -7,9 +8,11 @@ import { PlayerService } from '../player.service';
   templateUrl: './white.component.html',
   styleUrls: ['./white.component.css']
 })
-export class WhiteComponent implements AfterViewInit{
+export class WhiteComponent implements AfterViewInit, OnDestroy{
   @ViewChild('myCG') myCG!: ElementRef;
-
+  
+  
+  
   constructor(private playerService: PlayerService) {}
 
   ngAfterViewInit() {
@@ -20,4 +23,7 @@ export class WhiteComponent implements AfterViewInit{
 
   }
 
+  ngOnDestroy() {
+      this.playerService.close();
+  }
 }

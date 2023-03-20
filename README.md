@@ -1,24 +1,23 @@
 chessnut
 =====
-`chessnut` is a very simple and stupid chess web interface to play against chess engines.
- At its core, [binbo](https://github.com/DOBRO/binbo)  runs and interacts with chess engines.
- Moves are transmitted over Websockets using `cowboy`.
- The Web UI embodies the components out of `lichess-org/chessground-examples` . 
+`chessnut` is a very simple Angular web interface to play against chess engines.
+ At its core, [binbo](https://github.com/DOBRO/binbo) runs and interacts with chess engines.
+ The transmission of moves are handled [cowboy](https://https://github.com/ninenines/cowboy) .
+ The Web UI embodies the components out of [lichess-org/chessground-examples](https://github.com/lichess-org/chessground-examples). 
+
+This is a learning tool. Mainly, to practice some `erlang` programming language. 
 
 #### TODOS: 
-1. A better web interface. Chessground examples doesn't fullfill my requirements. 
-2. There are many things to implement out of `binbo`, the possibilities are many. Engine tournaments, a demo with pgn. 
+1. A better web interface. 
+2. There are many things to implement out of `binbo`, the possibilities are many. 
+Tournaments between engines, a game analyzer. 
+3. `chessground` doesn't know anything about en passant rule and pawn promotion. 
+I haven't add any lines to handle them. Therefore, those cases, when occur, render the game unplayable.
 
-### Warning
-The web interface doesn't close Websocket connections if you navigate between pages. accordingly many dangling websocket connection will be come into existence .
-The reason for that is, navigation and connection instantination are far seperate from each other. 
-There are two things to do:
-1. I'll disable single page rendering. 
-2. I have to introduce a cleanup in `cowboy`'s `terminate/3`  which eventually invokes `binbo:uci_disconnect`.
-
+## Installation
 ### Build ui
 ```sh
-cd priv/satranc
+cd priv/ui
 npm install 
 npm run build
 ```

@@ -6,9 +6,9 @@
  */
 
 .cg-wrap {
-  width: 320px;
-  height: 320px;
-  position: relative;
+  width: 640px;
+  height: 640px;
+  position: absolute;
   display: block;
 }
 

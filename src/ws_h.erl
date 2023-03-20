@@ -7,15 +7,16 @@
 -export([terminate/3]).
 
 -record(state, {
-         pid = undefined :: undefined | pid(),
+		 pid_cowboy = undefined :: undefined | pid(),	
+         pid_binbo = undefined :: undefined | pid(),
          state = undefined :: undefined | connected | running,
          color = undefined :: undefined | binary()
 }).
 
 init(Req, _State) ->
-    Opts = #{compress => true},
+    Opts = #{compress => false},
 	#{qs := QueryString} = Req, %% capture the color of the player from request.
-	State0 = #state{color = QueryString},
+	State0 = #state{color = QueryString, pid_cowboy = self()},
     {cowboy_websocket, Req, State0, Opts}.
 
 start_binbo() ->
@@ -28,7 +29,7 @@ start_binbo() ->
 websocket_init(State) ->
 	#state{color = Color} = State,   
 	Pid = start_binbo(),
-	State0 = State#state{pid = Pid},
+	State0 = State#state{pid_binbo = Pid},
 	case Color of 
 		<<"color=black">> -> 
 			{_, _, EngineMove} = binbo:uci_play(Pid, #{}),
@@ -44,7 +45,7 @@ skip_quote([T|$\"]) -> skip_quote(T);
 skip_quote(X) -> X.
 
 websocket_handle({text, Msg}, State) ->
-	#state{pid = Pid }=State,
+	#state{pid_binbo = Pid }=State,
 	{_, _, EngineMove} = binbo:uci_play(Pid, #{}, trim_quotes(Msg)),
 	{[{text,   << "{\"message\":\"", EngineMove/binary, "\"}">>}], State};
 
@@ -56,6 +57,8 @@ websocket_info({timeout, _Ref, Msg}, State) ->
 websocket_info(_Info, State) ->
     {[], State}.
 
-terminate(Reason, Req, #state{pid=Pid}) ->
-	Pid ! {terminate, Reason, Req},
+terminate(Reason, Req, #state{pid_cowboy = Pid0, pid_binbo=Pid1}) ->
+	io:format("closed connection ~p", [Reason]),
+	Pid0 ! {terminate, Reason, Req},
+	binbo:stop_server(Pid1),
 	ok.
