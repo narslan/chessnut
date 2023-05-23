@@ -6,7 +6,7 @@ chessnut
 superb [binbo](https://github.com/DOBRO/binbo) beneath the surface.
 `chessnut` was previously written in `Angular`, and used [lichess-org/chessground-examples](https://github.com/lichess-org/chessground-examples) as a board. 
 But after a little investigation, I decided to switch over other libraries.
-`chessnut` doesn't use `Angular` but `lit` and `chess-board` web component.     
+`chessnut` doesn't use `Angular` anymore but `lit` and `chess-board` web component.     
 
 This was a learning tool. Mainly, to practice `erlang` programming language. 
 It turns out that the idea has more fun in it than predicted.
