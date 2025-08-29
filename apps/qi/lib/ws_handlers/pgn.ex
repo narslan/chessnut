@@ -36,17 +36,12 @@ defmodule Qi.WS.Pgn do
       "ping" ->
         {:reply, :ok, {:text, JSON.encode!(%{"action" => "pong", "data" => []})}, state}
 
-      "onMove" ->
-        {:ok, results} = GenServer.call(analyzer_pid, :analyze_fen, fen: data["fen"])
-
-        res = %{"action" => action, "data" => results}
-        {:reply, :ok, {:text, JSON.encode!(res)}, state}
-
       "analyze_batch" ->
-        {:ok, results} = GenServer.call(analyzer_pid, :analyze_pgn, fens: data)
+        pgn = Qi.Pgn |> Qi.Repo.get(data)
+        evaluations = Pgndiv.analyze(pgn.moves)
 
-        {:reply, :ok, {:text, JSON.encode!(%{"action" => "analyze_batch", "data" => results})},
-         state}
+        {:reply, :ok,
+         {:text, JSON.encode!(%{"action" => "analyze_batch", "data" => evaluations})}, state}
     end
   end
 

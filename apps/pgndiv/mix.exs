@@ -26,7 +26,8 @@ defmodule Pgndiv.MixProject do
       {:chess_parser, github: "kokolegorille/chess_parser"},
       {:chessfold, github: "narslan/chessfold"},
       {:ecto_sql, "~> 3.13.2"},
-      {:postgrex, ">= 0.0.0"}
+      {:postgrex, ">= 0.0.0"},
+      {:chessuci, in_umbrella: true}
     ]
   end
 end

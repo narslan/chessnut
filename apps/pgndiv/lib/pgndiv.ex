@@ -57,17 +57,26 @@ defmodule Pgndiv do
         _ -> [start | fens]
       end
 
-    Enum.map(fens, fn fen ->
-      %{
-        fen: fen,
-        analysis:
-          %ChessUCIState{
-            engine: engine,
-            fen: fen,
-            multipv: 2
-          }
-          |> ChessUCI.bestmoves(depth: 20)
-      }
+    result =
+      Enum.map(fens, fn fen ->
+        %{
+          fen: fen,
+          analysis:
+            %ChessUCIState{
+              engine: engine,
+              fen: fen,
+              multipv: 2
+            }
+            |> ChessUCI.bestmoves(depth: 20)
+        }
+      end)
+
+    result
+    |> Enum.map(fn %{analysis: [a]} ->
+      cond do
+        Map.has_key?(a, "cp") -> String.to_integer(a["cp"])
+        Map.has_key?(a, "mate") -> if String.to_integer(a["mate"]) > 0, do: 9999, else: -9999
+      end
     end)
   end
 
