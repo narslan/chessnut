@@ -1,0 +1,49 @@
+{
+    "name": "licht",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "preview": "vite preview",
+        "lint": "eslint \"**/*.ts\""
+    },
+    "dependencies": {
+        "@lit/context": "^1.1.6",
+        "@lit/reactive-element": "^2.1.0",
+        "@lit/task": "^1.0.2",
+        "@spectrum-web-components/action-button": "^1.7.0",
+        "@spectrum-web-components/action-menu": "^1.7.0",
+        "@spectrum-web-components/button": "^1.7.0",
+        "@spectrum-web-components/card": "^1.7.0",
+        "@spectrum-web-components/field-label": "^1.7.0",
+        "@spectrum-web-components/menu": "^1.7.0",
+        "@spectrum-web-components/number-field": "^1.7.0",
+        "@spectrum-web-components/sidenav": "^1.7.0",
+        "@spectrum-web-components/styles": "^1.7.0",
+        "@spectrum-web-components/tabs": "^1.7.0",
+        "@spectrum-web-components/textfield": "^1.7.0",
+        "@spectrum-web-components/theme": "^1.7.0",
+        "@spectrum-web-components/top-nav": "^1.7.0",
+        "@vaadin/router": "^2.0.0",
+        "chess.js": "^1.4.0",
+        "chessboard-element": "^1.2.0",
+        "class-validator": "^0.14.2",
+        "eslint-plugin-lit": "^1.15.0",
+        "lit": "^3.3.0",
+        "lit-element": "^4.2.0",
+        "lit-html": "^3.3.0",
+        "ts-lit-plugin": "^2.0.2",
+        "tslib": "^2.8.1",
+        "uplot": "^1.6.32"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.30.1",
+        "eslint": "^9.30.1",
+        "globals": "^15.15.0",
+        "typescript": "~5.6.3",
+        "typescript-eslint": "^8.35.1",
+        "vite": "^6.3.5"
+    }
+}
