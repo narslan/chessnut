@@ -12,6 +12,9 @@ export class PgnView extends LitElement {
   @state()
   pgn: PGN | null = null;
 
+  @state()
+  game_id: string | null = null;
+
   connectedCallback() {
     super.connectedCallback();
 
@@ -20,6 +23,7 @@ export class PgnView extends LitElement {
 
     this.ws.onopen = () => {
       if (id) {
+        this.game_id = id
         this.ws!.send(JSON.stringify({ action: "pgn_one", data: id }));
       }
     };
@@ -59,7 +63,7 @@ export class PgnView extends LitElement {
       <!-- mit Mock -->
 
       <!-- mit WebSocket -->
-      <pgn-analyze .ws=${this.ws} .sanMoves=${this.pgn.sanMoves}></pgn-analyze>
+      <pgn-analyze .ws=${this.ws} .game_id=${this.game_id} .sanMoves= ${this.pgn.sanMoves} ></pgn-analyze>
     `;
   }
 }

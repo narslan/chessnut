@@ -2,21 +2,10 @@ defmodule Qi.WS.Pgn do
   require Ecto.Repo
 
   def init(_args) do
-    {:ok, pid} = Qi.Analyzer.start_link(engine_path: "stockfish")
-    {:ok, %{"analyzer_pid" => pid}}
+    {:ok, %{}}
   end
 
-  # def handle_in({"ping", [opcode: :text]}, state) do
-  #   {:reply, :ok, {:text, "pong"}, state}
-  # end
-
-  # def handle_in({message, [opcode: :text]}, state) when message == "ping" do
-  #   # decoded_message = JSON.decode!(message)
-
-  #   {:reply, :ok, {:text, ""}, state}
-  # end
-
-  def handle_in({message, [opcode: :text]}, %{"analyzer_pid" => analyzer_pid} = state) do
+  def handle_in({message, [opcode: :text]}, state) do
     {:ok, %{"action" => action, "data" => data}} = JSON.decode(message)
 
     case action do
@@ -37,12 +26,27 @@ defmodule Qi.WS.Pgn do
         {:reply, :ok, {:text, JSON.encode!(%{"action" => "pong", "data" => []})}, state}
 
       "analyze_batch" ->
-        pgn = Qi.Pgn |> Qi.Repo.get(data)
-        evaluations = Pgndiv.analyze(pgn.moves)
+        game_id = data
+        pgn = Qi.Pgn |> Qi.Repo.get(game_id)
+        # Analyse starten
+        Qi.Analyzer.analyze_batch(game_id, pgn.moves, self())
 
-        {:reply, :ok,
-         {:text, JSON.encode!(%{"action" => "analyze_batch", "data" => evaluations})}, state}
+        # Sofortige Antwort, damit Frontend auf "loading" umschalten kann
+        {:reply,
+         {:text, JSON.encode!(%{"action" => "analyze_batch_started", "game_id" => game_id})},
+         state}
     end
+  end
+
+  def handle_info({:analysis_ready, game_id, evaluations}, state) do
+    # Ergebnis zurückschicken
+    {:reply,
+     {:text,
+      JSON.encode!(%{
+        "action" => "analyze_batch_done",
+        "game_id" => game_id,
+        "data" => evaluations
+      })}, state}
   end
 
   def get_all do

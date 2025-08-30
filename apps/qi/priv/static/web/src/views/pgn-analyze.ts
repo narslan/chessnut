@@ -8,6 +8,7 @@ import uPlotCss from "uplot/dist/uPlot.min.css?inline"; // wichtig: bundler muss
 @customElement("pgn-analyze")
 export class PgnAnalyze extends LitElement {
   @property({ attribute: false }) ws!: WebSocket;
+  @property({ attribute: false }) game_id!: string;
   @property({ type: Boolean }) mockMode = false; // 🆕 Flag für Mock
   @property({ type: Array }) sanMoves: string[] = [];
 
@@ -26,6 +27,20 @@ export class PgnAnalyze extends LitElement {
       ${unsafeCSS(uPlotCss)}
     `,
     css`
+       .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      z-index: 10;
+    }
       .container {
         display: grid;
         grid-template-columns: 500px 1fr;
@@ -83,6 +98,10 @@ export class PgnAnalyze extends LitElement {
 
     return html`
       <div class="container">
+         ${this.loading
+        ? html`<div class="loading-overlay">⏳ Analysiere ...</div>`
+        : null}
+
         <chess-board
           class="board"
           style="width: 500px"
@@ -170,16 +189,7 @@ export class PgnAnalyze extends LitElement {
       this.trendValues = this.allTrendValues.slice(0, index + 1);
       this.evaluation = score;
       this.loading = false;
-    } else if (this.ws?.readyState === WebSocket.OPEN) {
-      // Nur neue Stellung an Engine schicken, Index mitschicken!
-      this.loading = true;
-      this.ws.send(
-        JSON.stringify({
-          action: "onMove",
-          data: { fen, index }, // 🔑 Index an Server übergeben
-        }),
-      );
-    }
+    } 
   }
 
   private nextMove = () => {
@@ -200,49 +210,6 @@ export class PgnAnalyze extends LitElement {
     } else if (this.ws) {
       this.setupWs();
     }
-    // const chartDiv = this.renderRoot.querySelector(
-    //   "#trendChart",
-    // ) as HTMLElement;
-
-    // const opts: uPlot.Options = {
-    //   width: chartDiv.clientWidth,
-    //   height: 300,
-    //   title: "Engine Evaluation",
-    //   scales: {
-    //     x: { time: false },
-    //     y: {
-    //       range: [-5, 5], // enger, falls du weniger extreme Ausreißer willst
-    //     },
-    //   },
-    //   axes: [
-    //     {
-    //       label: "Zug",
-    //       grid: { show: false }, // keine vertikalen Linien
-    //       ticks: { show: false }, // keine Tick-Marks
-    //       values: (_u, vals) =>
-    //         vals.map((v) => {
-    //           const ply = v as number;
-    //           // Nur weiße Züge mit Nummer zeigen (1,2,3,...)
-    //           return ply % 2 === 1 ? Math.ceil(ply / 2).toString() : "";
-    //         }),
-    //     },
-    //     {
-    //       label: "Evaluation (Pawns)",
-    //       grid: { show: true }, // horizontale Linien zur Orientierung
-    //     },
-    //   ],
-    //   series: [
-    //     {}, // x-Achse
-    //     {
-    //       label: "Score",
-    //       stroke: "green",
-    //       width: 2,
-    //       fill: "rgba(0,200,0,0.1)",
-    //     },
-    //   ],
-    // };
-
-    // this.chart = new uPlot(opts, [[], []], chartDiv);
   }
 
   updated() {
@@ -255,24 +222,18 @@ export class PgnAnalyze extends LitElement {
 
   private setupWs() {
     this.ws.onopen = () => {
-      const fens: string[] = [];
-      let game = new Chess();
-      for (const move of this.sanMoves) {
-        game.move(move);
-        fens.push(game.fen());
-      }
 
       this.ws.send(
         JSON.stringify({
           action: "analyze_batch",
-          data: { fens, depth: 20 },
+          data: this.game_id,
         }),
       );
     };
 
     this.ws.onmessage = (msg) => {
       const parsed = JSON.parse(msg.data);
-      if (parsed.action === "analyze_batch") {
+      if (parsed.action === "analyze_ready") {
         const results = parsed.data.results;
 
         // x-Werte = Zug-Index (0,1,2,...)
@@ -295,9 +256,9 @@ export class PgnAnalyze extends LitElement {
           this.chart.setData([xValues, yValues]);
         } else {
           // Falls Chart noch nicht existiert → jetzt erzeugen
-       const chartDiv = this.renderRoot.querySelector(
-       "#trendChart",
-     ) as HTMLElement;
+          const chartDiv = this.renderRoot.querySelector(
+            "#trendChart",
+          ) as HTMLElement;
           const opts: uPlot.Options = {
             width: 600,
             height: 300,
@@ -308,12 +269,12 @@ export class PgnAnalyze extends LitElement {
             },
             series: [{}, { label: "Score", stroke: "green", width: 2 }],
           };
-          this.chart = new uPlot(
-            opts,
-            [xValues, yValues],
-            chartDiv,
-          );
+          this.chart = new uPlot(opts, [xValues, yValues], chartDiv);
         }
+          this.loading = false;
+      } else if (parsed.action === "analyze_batch_started") {
+        //Ladeanzeige starten
+        this.loading = true;
       }
     };
   }

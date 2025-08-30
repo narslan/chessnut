@@ -1,30 +1,31 @@
 defmodule Qi.Analyzer do
   use GenServer
 
-  def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  ## API
+
+  def start_link(_args) do
+    GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
   end
 
-  @impl true
-  def init(opts) do
-    engine_path = Keyword.get(opts, :engine_path, "stockfish")
-    engine = ChessUCI.start(engine_path)
-    {:ok, %{"engine1" => engine}}
+  def analyze_batch(game_id, moves, ws_pid) do
+    GenServer.cast(__MODULE__, {:analyze_batch, game_id, moves, ws_pid})
   end
 
-  def analyze_pgn(pgn, depth \\ 20) do
-    GenServer.call(__MODULE__, {:analyze_pgn, pgn, depth})
+  ## Callbacks
+
+  def init(state) do
+    {:ok, state}
   end
 
-  @impl true
-  def handle_call({:analyze_pgn, fens}, _from, state) do
-    %ChessUCIState{
-      engine: state.engine1,
-      fen: hd(fens),
-      multipv: 1
-    }
-    |> ChessUCI.bestmoves(depth: 20)
+  def handle_cast({:analyze_batch, game_id, moves, ws_pid}, state) do
+    Task.start(fn ->
+      # hier direkt deine Analyse-Funktion aufrufen
+      evaluations = Pgndiv.analyze(moves)
 
-    {:reply, state}
+      # Ergebnis zurück an den WS-Handler
+      send(ws_pid, {:analysis_ready, game_id, evaluations})
+    end)
+
+    {:noreply, state}
   end
 end
