@@ -37,6 +37,7 @@ defmodule Pgndiv do
   end
 
   def analyze(pgn_moves) do
+    Logger.debug("Analyze gestartet")
     start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
     pos = Chessfold.string_to_position(start)
     engine = ChessUCI.start("stockfish")
@@ -44,9 +45,17 @@ defmodule Pgndiv do
     fens =
       pgn_moves
       |> String.split(" ", trim: true)
+      |> Enum.map(&String.trim_trailing(&1, ","))
+      |> Enum.map(&String.trim_trailing(&1, "."))
       |> Enum.scan(pos, fn move, acc ->
-        {:ok, acc} = Chessfold.play(acc, move)
-        acc
+        case Chessfold.play(acc, move) do
+          {:ok, new_pos} ->
+            new_pos
+
+          {:error, reason} ->
+            Logger.error("Ungültiger Zug #{move}: #{reason}")
+            acc
+        end
       end)
       |> Enum.map(&Chessfold.position_to_string/1)
 
@@ -65,18 +74,23 @@ defmodule Pgndiv do
             %ChessUCIState{
               engine: engine,
               fen: fen,
-              multipv: 2
+              multipv: 1
             }
-            |> ChessUCI.bestmoves(depth: 20)
+            |> ChessUCI.bestmoves(depth: 10)
         }
       end)
 
     result
-    |> Enum.map(fn %{analysis: [a]} ->
-      cond do
-        Map.has_key?(a, "cp") -> String.to_integer(a["cp"])
-        Map.has_key?(a, "mate") -> if String.to_integer(a["mate"]) > 0, do: 9999, else: -9999
-      end
+    |> Enum.map(fn %{analysis: analysis} ->
+      Enum.map(analysis, fn a ->
+        cond do
+          Map.has_key?(a, "cp") ->
+            String.to_integer(a["cp"])
+
+          Map.has_key?(a, "mate") ->
+            if String.to_integer(a["mate"]) > 0, do: 9999, else: -9999
+        end
+      end)
     end)
   end
 

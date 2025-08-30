@@ -32,21 +32,23 @@ defmodule Qi.WS.Pgn do
         Qi.Analyzer.analyze_batch(game_id, pgn.moves, self())
 
         # Sofortige Antwort, damit Frontend auf "loading" umschalten kann
-        {:reply,
+        {:reply, :ok,
          {:text, JSON.encode!(%{"action" => "analyze_batch_started", "game_id" => game_id})},
          state}
     end
   end
 
   def handle_info({:analysis_ready, game_id, evaluations}, state) do
-    # Ergebnis zurückschicken
-    {:reply,
-     {:text,
+    IO.inspect("Analysis sent to wire.")
+
+    msg =
       JSON.encode!(%{
-        "action" => "analyze_batch_done",
+        "action" => "analyze_ready",
         "game_id" => game_id,
         "data" => evaluations
-      })}, state}
+      })
+
+    {:push, {:text, msg}, state}
   end
 
   def get_all do

@@ -27,20 +27,20 @@ export class PgnAnalyze extends LitElement {
       ${unsafeCSS(uPlotCss)}
     `,
     css`
-       .loading-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255, 255, 255, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      font-weight: bold;
-      z-index: 10;
-    }
+      .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        z-index: 10;
+      }
       .container {
         display: grid;
         grid-template-columns: 500px 1fr;
@@ -86,10 +86,7 @@ export class PgnAnalyze extends LitElement {
         box-sizing: border-box;
       }
 
-      #trendChart {
-        width: 100%;
-        height: 300px;
-      }
+     
     `,
   ];
 
@@ -98,9 +95,9 @@ export class PgnAnalyze extends LitElement {
 
     return html`
       <div class="container">
-         ${this.loading
-        ? html`<div class="loading-overlay">⏳ Analysiere ...</div>`
-        : null}
+        ${this.loading
+          ? html`<div class="loading-overlay">⏳ Analysing ...</div>`
+          : null}
 
         <chess-board
           class="board"
@@ -129,7 +126,7 @@ export class PgnAnalyze extends LitElement {
           <div>Evaluation: ${this.evaluation} cp</div>
           <div>Bestmove: <b>${this.bestmove}</b></div>
           <div class="chart-wrapper">
-            <div id="trendChart"></div>
+            <div id="trendChart" ></div>
           </div>
 
           <div>Evaluation: ${this.evaluation.toFixed(2)} cp</div>
@@ -189,7 +186,7 @@ export class PgnAnalyze extends LitElement {
       this.trendValues = this.allTrendValues.slice(0, index + 1);
       this.evaluation = score;
       this.loading = false;
-    } 
+    }
   }
 
   private nextMove = () => {
@@ -213,42 +210,40 @@ export class PgnAnalyze extends LitElement {
   }
 
   updated() {
-    if (this.chart) {
-      const xs = this.trendValues.map((_, i) => i + 1);
-      const ys = this.trendValues;
-      this.chart.setData([xs, ys]);
-    }
+     if (this.chart && this.trendValues.length > 0) {
+    const xs = this.trendValues.map((_, i) => i + 1);
+    const ys = this.trendValues;
+    this.chart.setData([xs, ys]);
+  }
   }
 
   private setupWs() {
-    this.ws.onopen = () => {
-
-      this.ws.send(
-        JSON.stringify({
-          action: "analyze_batch",
-          data: this.game_id,
-        }),
-      );
-    };
+    this.ws.send(
+      JSON.stringify({
+        action: "analyze_batch",
+        data: this.game_id,
+      }),
+    );
+    this.loading = true;
 
     this.ws.onmessage = (msg) => {
       const parsed = JSON.parse(msg.data);
       if (parsed.action === "analyze_ready") {
-        const results = parsed.data.results;
+
+        const results = parsed.data;
+        console.log(results, "results")
 
         // x-Werte = Zug-Index (0,1,2,...)
-        const xValues = results.map((r) => r.index);
+        const xValues = results.map((_, i) => i + 1);
 
         // y-Werte = normalisierte Scores
         const yValues = results.map((r) => {
-          if (r.evaluation.mate !== undefined) {
-            // Mates auf +-10 normalisieren
-            return r.evaluation.mate > 0 ? 10 : -10;
-          } else {
-            return r.evaluation.cp / 100; // z.B. 23 → 0.23 Bauerneinheiten
+         
+            return r[0] / 100; 
           }
-        });
-
+        );
+    console.log(xValues, "xValues");
+    console.log(yValues, "yValues");
         this.allTrendValues = yValues;
 
         // uPlot updaten
@@ -271,7 +266,7 @@ export class PgnAnalyze extends LitElement {
           };
           this.chart = new uPlot(opts, [xValues, yValues], chartDiv);
         }
-          this.loading = false;
+        this.loading = false;
       } else if (parsed.action === "analyze_batch_started") {
         //Ladeanzeige starten
         this.loading = true;
